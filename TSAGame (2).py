@@ -8,19 +8,20 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
-
+pygame.font.init()
+font_path = r'C:\Users\jddoc\OneDrive\Desktop\Roboto-Regular.ttf'
 # Set the dimensions of the grid
-SCREEN_WIDTH = 12
-SCREEN_HEIGHT = 18
+SCREEN_WIDTH = 40
+SCREEN_HEIGHT = 30
 
 # Set the size of each block in pixels
 BLOCK_SIZE = 30
 
 # Set the font for displaying the score and timer
 FONT_NAME = pygame.font.match_font('arial')
-SCORE_FONT = pygame.font.Font('arial.ttf', 30)
-TIMER_FONT = pygame.font.Font('arial.ttf', 30)
-GAME_OVER_FONT = pygame.font.Font('arial.ttf', 30)
+SCORE_FONT = pygame.font.Font(font_path, 30)
+TIMER_FONT = pygame.font.Font(font_path, 30)
+GAME_OVER_FONT = pygame.font.Font(font_path, 30)
 
 NUM_ROWS = 8
 NUM_COLS = 10
@@ -102,6 +103,14 @@ class BlockGrid:
         self.game_over = False
         self.screen = pygame.display.set_mode((SCREEN_WIDTH * BLOCK_SIZE, SCREEN_HEIGHT * BLOCK_SIZE))
         self.cursor = None
+        self.num_cleared_blocks = 0
+        self.blocks = []
+
+    def has_block_over_red_line(self):
+        for block in self.blocks:
+            if block.y <= RED_LINE_Y:
+                return True
+        return False
 
     def create_falling_block(self):
         """Create a new falling block."""
@@ -315,6 +324,8 @@ def run_game():
     pygame.display.set_caption("Block Game")
     clock = pygame.time.Clock()
     font = pygame.font.SysFont(None, 30)
+    matrixImg = pygame.image.load('Screen Shot 2023-03-09 at 5.21.07 PM.png')
+    screen.blit(matrixImg, (400, 300))
 
     # Create the block grid
     block_grid = BlockGrid(NUM_ROWS, NUM_COLS)
@@ -343,6 +354,7 @@ def run_game():
         # Update the game state
         block_grid.update()
         block_grid.check_groups()
+        screen.blit(matrixImg, (400, 300))
 
         # Update the score
         num_cleared_blocks = block_grid.num_cleared_blocks
