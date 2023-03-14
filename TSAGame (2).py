@@ -18,9 +18,9 @@ BLOCK_SIZE = 30
 
 # Set the font for displaying the score and timer
 FONT_NAME = pygame.font.match_font('arial')
-SCORE_FONT = pygame.font.match_font('arial')
-TIMER_FONT = pygame.font.match_font('arial')
-GAME_OVER_FONT = pygame.font.match_font('arial')
+SCORE_FONT = pygame.font.Font('arial.ttf', 30)
+TIMER_FONT = pygame.font.Font('arial.ttf', 30)
+GAME_OVER_FONT = pygame.font.Font('arial.ttf', 30)
 
 NUM_ROWS = 8
 NUM_COLS = 10
@@ -44,11 +44,21 @@ class BlockGroup:
     
     @classmethod
     def random(cls):
-        blocks = []
-        for i in range(4):
-            block = (random.randint(0, 9), random.randint(0, 9))
-            blocks.append(block)
-        return cls(blocks)
+        @classmethod
+        def random(cls):
+            x = random.choice(range(6))
+            y = random.choice(range(6))
+            block_type = random.choice(list(cls.block_shapes.keys()))
+            block_color = random.choice(list(cls.block_colors.keys()))
+            blocks = []
+            for i in range(2):
+                for j in range(2):
+                    if cls.block_shapes[block_type][i][j]:
+                        block = Block(cls.block_size, block_color)
+                        block.rect.x = (x + j) * cls.block_size
+                        block.rect.y = (y + i) * cls.block_size
+                        blocks.append(block)
+            return cls(blocks)
 
     def __init__(self):
         self.blocks = [
@@ -90,11 +100,14 @@ class BlockGrid:
         self.score = 0
         self.timer = clock.tick(FPS)
         self.game_over = False
+        self.screen = pygame.display.set_mode((SCREEN_WIDTH * BLOCK_SIZE, SCREEN_HEIGHT * BLOCK_SIZE))
+        self.cursor = None
 
     def create_falling_block(self):
         """Create a new falling block."""
         self.current_block = BlockGroup.random()
-        self.current_block.move(self.cols // 2 - 1, 0)
+        if self.current_block != None:
+            self.current_block.move(self.cols // 2 - 1, 0)
 
     def update(self):
         """Update the game state."""
@@ -102,14 +115,15 @@ class BlockGrid:
             self.create_falling_block()
 
         # Check if the current block can move down
-        if self.current_block.can_move(0, 1):
-            self.current_block.move(0, 1)
-        else:
-            # The block can't move down, so add it to the grid and create a new falling block
-            self.current_block.add_to_grid(self.grid)
-            cleared = self.clear_groups()
-            self.score += 30 + 10 * (len(cleared) - 1)
-            self.current_block = None
+        if self.current_block != None:
+            if self.current_block.can_move(0, 1):
+                self.current_block.move(0, 1)
+            else:
+                # The block can't move down, so add it to the grid and create a new falling block
+                self.current_block.add_to_grid(self.grid)
+                cleared = self.clear_groups()
+                self.score += 30 + 10 * (len(cleared) - 1)
+                self.current_block = None
 
         # Check if any blocks are above the red line
         for col in range(self.cols):
@@ -118,8 +132,7 @@ class BlockGrid:
                 self.game_over = True
                 return
 
-        # Update the timer
-        self.timer.update()
+
 
     def clear_groups(self):
         """Clear all groups of three or more blocks and return the list of cleared blocks."""
@@ -304,7 +317,7 @@ def run_game():
     font = pygame.font.SysFont(None, 30)
 
     # Create the block grid
-    block_grid = BlockGrid(NUM_ROWS, NUM_COLS, BLOCK_SIZE)
+    block_grid = BlockGrid(NUM_ROWS, NUM_COLS)
 
     # Initialize game variables
     score = 0
@@ -364,6 +377,10 @@ def run_game():
     pygame.time.wait(2000)
 
     pygame.quit()
+
+import random
+
+
 
 if __name__ == "__main__":
     run_game()
